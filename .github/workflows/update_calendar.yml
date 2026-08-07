@@ -1,0 +1,32 @@
+name: Update Today's Date
+
+on:
+  schedule:
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Update today marker
+        run: python3 update_today.py
+
+      - name: Commit & Push
+        run: |
+          git config user.name "Bin's Calendar Bot"
+          git config user.email "bot@example.com"
+          git add all_in_one.html
+          git diff --staged --quiet || git commit -m "🔴 오늘 날짜 업데이트: $(date '+%Y-%m-%d')"
+          git push
+
+      - name: Install kl CLI
+        run: npm install -g @kingslanding/cli
+
+      - name: Deploy to Kingslanding
+        env:
+          KL_DEPLOY_KEY: ${{ secrets.KINGSLANDING_API_KEY }}
+        run: kl deploy --key "$KL_DEPLOY_KEY" --file all_in_one.html
